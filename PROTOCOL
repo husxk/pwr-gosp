@@ -1,0 +1,92 @@
+
+Binary packet protocol:
+
+[LENGTH][TYPE][TYPE_PAYLOAD]
+
+LENGTH        uint16_t
+TYPE          uint8_t
+TYPE_PAYLOAD  uint8_t[]
+
+where:
+  LENGTH       - length of whole packet. It is encoded in network byte order
+  TYPE         - type of packet.
+  TYPE_PAYLOAD - packet specific payload.
+
+
+
+Current TYPEs:
+  TYPE           CODE
+
+  NACK            0x01
+
+  GET_DHT22       0x60
+  REPLY_DHT22     0x61
+
+
+NACK binary packet protocol:
+
+[LENGTH][NACK]
+
+LENGTH        uint16_t
+TYPE          uint8_t
+
+where:
+  LENGTH      = Length of whole packet. It is encoded in network byte order.
+                Must be set to 0x02.
+
+  NACK        = 0x01
+
+NACK packet means that the last packet was rejected.
+It may be sent due to invalid packet.
+
+
+
+GET_DHT22 binary packet protocol:
+
+[LENGTH][GET_DHT22]
+
+LENGTH        uint16_t
+TYPE          uint8_t
+
+where:
+  LENGTH      = Length of whole packet. It is encoded in network byte order.
+                Must be set to 0x02.
+
+  GET_DHT22   = 0x60
+
+
+
+REPLY_DHT22 binary packet protocol:
+
+[LENGTH][REPLY_DHT22][SUCCESS][TEMPERATURE][HUMIDITY]
+
+LENGTH        uint16_t
+TYPE          uint8_t
+SUCCESS       bool
+TEMPERATURE   int32_t
+HUMIDITY      int32_t
+
+where:
+  LENGTH      = Length of whole packet. It is encoded in network byte order.
+                Must be set to 0x04 or 0x0B
+                0x04 = sizeof(LENGTH) + sizeof(TYPE) + sizeof(SUCCESS);
+                0x0B = 0x04 + sizeof(TEMPERATURE) + sizeof(HUMIDITY);
+
+  REPLY_DHT22 = 0x61
+
+  SUCCESS     = boolean, 0 means that firmware got some error in DHT22 transaction,
+                and there is no valid data to return.
+                If SUCCESS == 0, there is no TEMPERATURE or HUMIDITY field.
+
+  TEMPERATURE = int32_t, encoded in network byte order.
+                This field is (measured temperature * 100).
+                  For example:
+                    -7.94 is encoded as -794
+                    19.38 is encoded as 1938
+                Measured temperature in Celcius.
+
+  HUMIDITY    = int32_t, encoded in network byte order.
+                This field is (measured humidity * 100).
+                  For example:
+                  5.59 is encoded as 559.
+                Measured relative humidity.
