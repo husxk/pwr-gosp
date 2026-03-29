@@ -3,3 +3,5 @@ build/
 simulator/tcp_client
 simulator/tcp_server
 
+wlan.ini
+
